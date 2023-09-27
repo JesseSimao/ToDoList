@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDo List</title>
+</head>
+<body>
+    
+    <h1>To-Do List</h1>
+    <input type="text" id="task" placeholder="Add a new task">
+    <button id="addTask">Add Task</button>
+    <ul id="taskList"></ul>
+
+    <!-- Include Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
+
+    <script>
+        // Your Firebase configuration
+        var firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Get a reference to the Firestore database
+        const db = firebase.firestore();
+
+        const taskInput = document.getElementById("task");
+        const addTaskButton = document.getElementById("addTask");
+        const taskList = document.getElementById("taskList");
+
+        // Add a new task to Firestore
+        addTaskButton.addEventListener("click", () => {
+            const taskText = taskInput.value.trim();
+            if (taskText !== "") {
+                db.collection("tasks").add({
+                    text: taskText
+                })
+                .then(() => {
+                    taskInput.value = "";
+                })
+                .catch(error => {
+                    console.error("Error adding task: ", error);
+                });
+            }
+        });
+
+        // Real-time listener for tasks
+        db.collection("tasks").onSnapshot(snapshot => {
+            taskList.innerHTML = "";
+            snapshot.forEach(doc => {
+                const task = doc.data();
+                const li = document.createElement("li");
+                li.textContent = task.text;
+                taskList.appendChild(li);
+            });
+        });
+    </script>
+</body>
+</html>
